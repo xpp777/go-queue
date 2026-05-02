@@ -5,6 +5,4 @@ ListenerConf:
   Port: 5672
   ListenerQueues:
     -
-      Name: gozero
-
-
+      Name: jxj

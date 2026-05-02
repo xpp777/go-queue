@@ -16,7 +16,8 @@ func main() {
 	admin := rabbitmq.MustNewAdmin(conf)
 	exchangeConf := rabbitmq.ExchangeConf{
 		ExchangeName: "jiang",
-		Type:         "direct",
+		Type:         "x-delayed-message",
+		DelayedType:  "direct",
 		Durable:      true,
 		AutoDelete:   false,
 		Internal:     false,

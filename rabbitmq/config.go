@@ -41,7 +41,8 @@ type QueueConf struct {
 
 type ExchangeConf struct {
 	ExchangeName string
-	Type         string `json:",options=direct|fanout|topic|headers"` // exchange type
+	Type         string `json:",options=direct|fanout|topic|headers|x-delayed-message"` // exchange type
+	DelayedType  string `json:",optional,default=direct"`                               // routed exchange type for delayed exchanges
 	Durable      bool   `json:",default=true"`
 	AutoDelete   bool   `json:",default=false"`
 	Internal     bool   `json:",default=false"`

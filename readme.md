@@ -118,3 +118,31 @@ for round := 0; round < 3; round++ {
 }
 cmdline.EnterToContinue()
 ```
+
+## rabbitmq
+
+RabbitMQ sender/listener wrapper.
+
+### delayed message example
+
+```go
+admin := rabbitmq.MustNewAdmin(conf)
+err := admin.DeclareExchange(rabbitmq.ExchangeConf{
+	ExchangeName: "jiang",
+	Type:         "x-delayed-message",
+	DelayedType:  "direct",
+}, nil)
+if err != nil {
+	log.Fatal(err)
+}
+
+sender := rabbitmq.MustNewSender(rabbitmq.RabbitSenderConf{
+	RabbitConf:  conf,
+	ContentType: "text/plain",
+})
+
+err = sender.SendWithOption("jiang", "jxj", []byte("hello"), rabbitmq.WithDelay(5000))
+if err != nil {
+	log.Fatal(err)
+}
+```

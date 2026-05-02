@@ -36,7 +36,7 @@ func (q *Admin) DeclareExchange(conf ExchangeConf, args amqp.Table) error {
 		conf.AutoDelete,
 		conf.Internal,
 		conf.NoWait,
-		args,
+		buildExchangeArgs(conf, args),
 	)
 }
 
@@ -61,4 +61,23 @@ func (q *Admin) Bind(queueName string, routekey string, exchange string, notWait
 		notWait,
 		args,
 	)
+}
+
+func buildExchangeArgs(conf ExchangeConf, args amqp.Table) amqp.Table {
+	if conf.Type != "x-delayed-message" {
+		return args
+	}
+
+	merged := amqp.Table{}
+	for k, v := range args {
+		merged[k] = v
+	}
+
+	delayedType := conf.DelayedType
+	if delayedType == "" {
+		delayedType = "direct"
+	}
+	merged["x-delayed-type"] = delayedType
+
+	return merged
 }
