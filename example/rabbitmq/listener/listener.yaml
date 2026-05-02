@@ -6,3 +6,5 @@ ListenerConf:
   ListenerQueues:
     -
       Name: jxj
+      AutoAck: false
+      RequeueOnError: true

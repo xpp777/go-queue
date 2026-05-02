@@ -18,7 +18,9 @@ type RabbitListenerConf struct {
 type ConsumerConf struct {
 	Name      string
 	AutoAck   bool `json:",default=true"`
-	Exclusive bool `json:",default=false"`
+	// Whether to requeue the message when consumption fails and AutoAck is false.
+	RequeueOnError bool `json:",default=true"`
+	Exclusive      bool `json:",default=false"`
 	// Set to true, which means that messages sent by producers in the same connection
 	// cannot be delivered to consumers in this connection.
 	NoLocal bool `json:",default=false"`

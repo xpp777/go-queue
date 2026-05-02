@@ -123,6 +123,27 @@ cmdline.EnterToContinue()
 
 RabbitMQ sender/listener wrapper.
 
+### listener ack behavior
+
+```yaml
+ListenerConf:
+  Username: guest
+  Password: guest
+  Host: 127.0.0.1
+  Port: 5672
+  ListenerQueues:
+    -
+      Name: jxj
+      AutoAck: false
+      RequeueOnError: true
+```
+
+When `AutoAck` is `false`, the listener will:
+
+- call `Ack` after `Consume()` returns `nil`
+- call `Nack` after `Consume()` returns error
+- requeue failed messages when `RequeueOnError` is `true`
+
 ### delayed message example
 
 ```go
@@ -140,6 +161,7 @@ sender := rabbitmq.MustNewSender(rabbitmq.RabbitSenderConf{
 	RabbitConf:  conf,
 	ContentType: "text/plain",
 })
+defer sender.Close()
 
 err = sender.SendWithOption("jiang", "jxj", []byte("hello"), rabbitmq.WithDelay(5000))
 if err != nil {

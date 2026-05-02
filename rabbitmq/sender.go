@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"context"
 	"log"
+	"sync"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -13,12 +14,21 @@ type (
 	Sender interface {
 		Send(exchange string, routeKey string, msg []byte) error
 		SendWithOption(exchange, routeKey string, msg []byte, opts ...PublishOption) error
+		Close() error
+	}
+
+	senderChannel interface {
+		PublishWithContext(ctx context.Context, exchange, key string, mandatory, immediate bool,
+			msg amqp.Publishing) error
+		Close() error
 	}
 
 	RabbitMqSender struct {
-		conn        *amqp.Connection
-		channel     *amqp.Channel
+		conn        listenerConnection
+		channel     senderChannel
 		ContentType string
+		closeOnce   sync.Once
+		closeErr    error
 	}
 )
 
@@ -39,7 +49,7 @@ func MustNewSender(rabbitMqConf RabbitSenderConf) *RabbitMqSender {
 	}
 
 	sender.conn = conn
-	channel, err := sender.conn.Channel()
+	channel, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("failed to open a channel, error: %v", err)
 	}
@@ -80,4 +90,21 @@ func (q *RabbitMqSender) SendWithOption(exchange, routeKey string, msg []byte, o
 		false,
 		pub,
 	)
+}
+
+func (q *RabbitMqSender) Close() error {
+	q.closeOnce.Do(func() {
+		if q.channel != nil {
+			if err := q.channel.Close(); err != nil {
+				q.closeErr = err
+			}
+		}
+		if q.conn != nil {
+			if err := q.conn.Close(); err != nil && q.closeErr == nil {
+				q.closeErr = err
+			}
+		}
+	})
+
+	return q.closeErr
 }

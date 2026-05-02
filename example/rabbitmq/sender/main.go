@@ -15,6 +15,7 @@ func main() {
 		Password: "guest",
 	}, ContentType: "application/json"}
 	sender := rabbitmq.MustNewSender(conf)
+	defer sender.Close()
 	data := map[string]interface{}{
 		"msg": "json test 111",
 	}
@@ -24,8 +25,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	_ = sender.Close()
 	conf.ContentType = "text/plain"
 	sender = rabbitmq.MustNewSender(conf)
+	defer sender.Close()
 	message := "test message"
 	err = sender.Send("jiang", "jxj", []byte(message))
 	if err != nil {
